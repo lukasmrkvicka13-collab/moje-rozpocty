@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rozpočty - Lukáš Mrkvička</title>
     
-    <!-- Načtení Tailwind CSS pro stylování -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Načtení Reactu a Babelu pro běh aplikace -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- OPRAVA PROTI BÍLÉ OBRAZOVCE (Classic React runtime) -->
     <script>
         Babel.registerPreset('classic-react', {
             presets: [[Babel.availablePresets['react'], { runtime: 'classic' }]]
@@ -21,76 +17,24 @@
     </script>
 
     <style>
-        /* Styly pro tisk */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            .print-area, .print-area * {
-                visibility: visible;
-            }
-            .print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                box-shadow: none;
-            }
-            @page {
-                size: A4;
-                margin: 15mm 15mm 15mm 15mm; 
-            }
-            .break-before-page {
-                page-break-before: always; 
-            }
-            .no-print {
-                display: none !important;
-            }
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; }
+            @page { size: A4; margin: 15mm 15mm 15mm 15mm; }
+            .break-before-page { page-break-before: always; }
+            .no-print { display: none !important; }
         }
-        /* Placeholder styly */
-        ::placeholder {
-            color: #9CA3AF;
-            opacity: 1; 
-            font-style: italic;
-        }
-        /* Modal Overlay */
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        /* Editor Styles inside PDF preview */
-        .description-content ul {
-            list-style-type: disc;
-            margin-left: 1.5em;
-        }
-        .description-content ol {
-            list-style-type: decimal;
-            margin-left: 1.5em;
-        }
-        .description-content b, .description-content strong {
-            font-weight: bold;
-        }
-        .description-content i, .description-content em {
-            font-style: italic;
-        }
-        .description-content u {
-            text-decoration: underline;
-        }
-        /* Styl pro drag & drop */
-        .draggable-item {
-            cursor: grab;
-        }
-        .draggable-item:active {
-            cursor: grabbing;
-        }
-        [contenteditable]:empty:before {
-            content: attr(placeholder);
-            color: #9CA3AF;
-            font-style: italic;
-            pointer-events: none;
-            display: block;
-        }
+        ::placeholder { color: #9CA3AF; opacity: 1; font-style: italic; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
+        .description-content ul { list-style-type: disc; margin-left: 1.5em; }
+        .description-content ol { list-style-type: decimal; margin-left: 1.5em; }
+        .description-content b, .description-content strong { font-weight: bold; }
+        .description-content i, .description-content em { font-style: italic; }
+        .description-content u { text-decoration: underline; }
+        .draggable-item { cursor: grab; }
+        .draggable-item:active { cursor: grabbing; }
+        [contenteditable]:empty:before { content: attr(placeholder); color: #9CA3AF; font-style: italic; pointer-events: none; display: block; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -100,7 +44,6 @@
     <script type="text/babel" data-presets="classic-react">
         const { useState, useEffect, useRef } = React;
 
-        // --- ICONS ---
         const Icon = ({ path, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 {path}
@@ -123,15 +66,8 @@
             FolderUp: <><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3-3 3 3"/></>,
             Paste: <><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></>,
             Sparkles: <><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></>,
-            Key: <><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>,
-            Bold: <><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></>,
-            Italic: <><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></>,
-            Underline: <><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></>,
-            List: <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
             Book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>,
             Search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
-            ArrowLeft: <><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
-            ArrowRight: <><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
             Maximize: <><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></>,
             Mic: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>,
             Cloud: <><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></>,
@@ -154,232 +90,55 @@
           </svg>
         );
 
-        // ==========================================
-        // CHYTRÉ VYHLEDÁVÁNÍ (Toleruje překlepy a diakritiku)
-        // ==========================================
         const removeDiacritics = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        
-        const getLevenshteinDistance = (a, b) => {
-            if (a.length === 0) return b.length;
-            if (b.length === 0) return a.length;
-            const matrix = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(null));
-            for (let i = 0; i <= a.length; i += 1) matrix[i][0] = i;
-            for (let j = 0; j <= b.length; j += 1) matrix[0][j] = j;
-            for (let i = 1; i <= a.length; i += 1) {
-                for (let j = 1; j <= b.length; j += 1) {
-                    const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1, matrix[i - 1][j - 1] + indicator);
-                }
-            }
-            return matrix[a.length][b.length];
-        };
-
         const fuzzyMatch = (searchStr, targetStr) => {
             const s = removeDiacritics(searchStr).trim();
             const t = removeDiacritics(targetStr);
             if (!s) return true;
-            if (t.includes(s)) return true; // Přesná shoda (bez háčků)
-            
-            // Pokud je hledaný výraz delší, tolerujeme překlepy
-            if (s.length > 3) {
-                const searchWords = s.split(/\s+/);
-                const targetWords = t.split(/\s+/);
-                // Každé hledané slovo se musí (byť s překlepem) najít v cílovém textu
-                return searchWords.every(sw => 
-                    targetWords.some(tw => {
-                        if (tw.includes(sw)) return true;
-                        if (Math.abs(sw.length - tw.length) > 2) return false; // Moc velký rozdíl v délce slova
-                        // Tolerujeme 1 překlep pro kratší slova, 2 pro delší
-                        return getLevenshteinDistance(sw, tw) <= (sw.length > 5 ? 2 : 1);
-                    })
-                );
-            }
-            return false;
+            return t.includes(s);
         };
 
-        // ==========================================
-        // VYSKAKOVACÍ TEXTOVÝ EDITOR (Focus Mode)
-        // ==========================================
         const RichTextEditor = ({ value, onChange, placeholder, apiKey, aiAction, isEnhancing, suggestItemsAction, isSuggestingItems }) => {
             const [isExpanded, setIsExpanded] = useState(false);
             const [isListening, setIsListening] = useState(false);
             const recognitionRef = useRef(null);
-            const textRef = useRef(value);
-
-            // Udržujeme aktuální text v referenci pro callback z diktování
-            useEffect(() => {
-                textRef.current = value;
-            }, [value]);
-
-            useEffect(() => {
-                // Inicializace rozpoznávání řeči
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (SpeechRecognition) {
-                    const recognition = new SpeechRecognition();
-                    recognition.continuous = true;
-                    recognition.interimResults = false;
-                    recognition.lang = 'cs-CZ'; // Nastaveno na češtinu
-
-                    recognition.onresult = (event) => {
-                        const latestResult = event.results[event.results.length - 1];
-                        if (latestResult.isFinal) {
-                            const newText = latestResult[0].transcript;
-                            const currentText = textRef.current || "";
-                            const separator = currentText && !currentText.endsWith(' ') && !currentText.endsWith('\n') ? ' ' : '';
-                            // Zajištění prvního velkého písmene na začátku fragmentu
-                            const formattedNewText = newText.charAt(0).toUpperCase() + newText.trim().slice(1);
-                            onChange(currentText + separator + formattedNewText);
-                        }
-                    };
-                    
-                    recognition.onerror = (event) => {
-                        console.error("Chyba rozpoznávání řeči:", event.error);
-                        setIsListening(false);
-                    };
-                    
-                    recognition.onend = () => {
-                        setIsListening(false);
-                    };
-                    
-                    recognitionRef.current = recognition;
-                }
-            }, []);
-
-            const toggleDictation = () => {
-                if (!recognitionRef.current) {
-                    alert("Tvůj prohlížeč bohužel nepodporuje diktování. Použij prosím Google Chrome nebo Microsoft Edge.");
-                    return;
-                }
-                if (isListening) {
-                    recognitionRef.current.stop();
-                } else {
-                    try {
-                        recognitionRef.current.start();
-                        setIsListening(true);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            };
             
-            // Reakce na klávesu Esc pro zavření okna
-            useEffect(() => {
-                const handleKeyDown = (e) => {
-                    if (e.key === 'Escape' && isExpanded) {
-                        setIsExpanded(false);
-                    }
-                };
-                window.addEventListener('keydown', handleKeyDown);
-                return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [isExpanded]);
-
             return (
-                <>
-                    {/* Zmenšený náhled v levém panelu */}
-                    <div 
-                        className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm cursor-text hover:border-orange-400 transition-colors group flex flex-col"
-                        onClick={() => setIsExpanded(true)}
-                        title="Klikni pro zvětšení a psaní"
-                    >
-                        <div className="w-full p-4 text-gray-700 h-[100px] overflow-hidden bg-gray-50 group-hover:bg-white transition-colors relative">
-                            {value ? (
-                                <div className="whitespace-pre-wrap text-sm">{value}</div>
-                            ) : (
-                                <div className="text-gray-400 italic text-sm">{placeholder}</div>
-                            )}
-                            {/* Efekt mizení textu dole, aby bylo vidět, že tam je toho víc */}
-                            <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-50 group-hover:from-white to-transparent transition-colors"></div>
-                        </div>
-                        <div className="bg-gray-100 border-t border-gray-200 px-3 py-1.5 flex justify-between items-center text-xs text-gray-500">
-                            <span>Klikni pro psaní</span>
-                            <div className="flex items-center gap-3">
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); toggleDictation(); }}
-                                    className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isListening ? 'bg-red-100 text-red-600 animate-pulse' : 'hover:bg-gray-200 text-gray-500'}`}
-                                    title="Diktovat text hlasem"
-                                >
-                                    <SimpleIcon name="Mic" size={14} />
-                                    {isListening ? 'Poslouchám...' : ''}
-                                </button>
-                                <SimpleIcon name="Maximize" size={14} className="text-gray-400 group-hover:text-orange-500 transition-colors" />
-                            </div>
-                        </div>
+                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm cursor-text hover:border-orange-400 transition-colors flex flex-col" onClick={() => setIsExpanded(true)}>
+                    <div className="w-full p-4 text-gray-700 h-[100px] overflow-hidden bg-gray-50 relative">
+                        {value ? <div className="whitespace-pre-wrap text-sm">{value}</div> : <div className="text-gray-400 italic text-sm">{placeholder}</div>}
+                        <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-50 to-transparent"></div>
+                    </div>
+                    <div className="bg-gray-100 border-t border-gray-200 px-3 py-1.5 flex justify-between items-center text-xs text-gray-500">
+                        <span>Klikni pro psaní (nebo úpravu přes AI)</span>
+                        <SimpleIcon name="Maximize" size={14} className="text-gray-400" />
                     </div>
 
-                    {/* Zvětšený pohled (Vyskakovací okno přes celou obrazovku) */}
                     {isExpanded && (
-                        <div 
-                            className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 no-print"
-                            onMouseDown={(e) => {
-                                // Zavřít při kliknutí na tmavé pozadí mimo editor
-                                if (e.target === e.currentTarget) setIsExpanded(false);
-                            }}
-                        >
-                            <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                                {/* Hlavička editoru */}
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 p-4 no-print" onMouseDown={(e) => { if (e.target === e.currentTarget) setIsExpanded(false); }}>
+                            <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl flex flex-col overflow-hidden">
                                 <div className="bg-orange-500 text-white px-6 py-3 flex justify-between items-center font-bold">
                                     <span className="flex items-center gap-2"><SimpleIcon name="FileText" size={20} /> Úprava popisu prací</span>
-                                    <button onClick={() => setIsExpanded(false)} className="hover:bg-orange-600 p-1 rounded transition-colors" title="Zavřít"><SimpleIcon name="X" size={20} /></button>
+                                    <button onClick={() => setIsExpanded(false)} className="hover:bg-orange-600 p-1 rounded"><SimpleIcon name="X" size={20} /></button>
                                 </div>
-                                
-                                {/* Samotné pole pro psaní */}
-                                <textarea
-                                    autoFocus
-                                    value={value}
-                                    onChange={(e) => onChange(e.target.value)}
-                                    placeholder="Rozepiš se o detailech projektu... Můžeš i diktovat kliknutím na mikrofon dole."
-                                    className="w-full p-6 outline-none resize-none min-h-[50vh] text-gray-800 text-base leading-relaxed bg-white"
-                                />
-                                
-                                {/* Patička s tlačítky */}
-                                <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                                    <span className="text-xs text-gray-500 hidden sm:inline-block">
-                                        Tip: Můžeš zavřít klávesou <kbd className="bg-white border border-gray-300 rounded px-1.5 py-0.5 shadow-sm font-mono text-[10px] mx-1">Esc</kbd>
-                                    </span>
-                                    <div className="flex gap-2 w-full sm:w-auto justify-end flex-wrap">
-                                        <button 
-                                            onClick={(e) => { e.preventDefault(); toggleDictation(); }}
-                                            className={`text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 font-bold transition-all shadow-sm ${isListening ? 'bg-red-100 text-red-700 border border-red-200 animate-pulse' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
-                                            title="Diktovat hlasem"
-                                        >
-                                            <SimpleIcon name="Mic" size={16} />
-                                            <span className="hidden sm:inline">{isListening ? 'Poslouchám...' : 'Diktovat'}</span>
-                                        </button>
-                                        
-                                        {apiKey && (
-                                            <>
-                                                <button 
-                                                    onClick={(e) => { e.preventDefault(); suggestItemsAction(); }} 
-                                                    disabled={isSuggestingItems || !value} 
-                                                    className={`text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 font-bold transition-all shadow-sm ${isSuggestingItems || !value ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200'}`}
-                                                    title="AI navrhne konkrétní položky rozpočtu z tohoto textu"
-                                                >
-                                                    <SimpleIcon name="Sparkles" size={16} className={isSuggestingItems ? "animate-pulse" : ""} />
-                                                    {isSuggestingItems ? 'AI navrhuje...' : 'Navrhnout (AI) položky'}
-                                                </button>
-                                                <button 
-                                                    onClick={(e) => { e.preventDefault(); aiAction(); }} 
-                                                    disabled={isEnhancing || !value} 
-                                                    className={`text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 font-bold transition-all shadow-sm ${isEnhancing || !value ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200'}`}
-                                                    title="AI učeše a zprofesionalizuje tvůj text"
-                                                >
-                                                    <SimpleIcon name="Sparkles" size={16} className={isEnhancing ? "animate-pulse" : ""} />
-                                                    {isEnhancing ? 'AI přepisuje...' : 'Vylepšit přes AI'}
-                                                </button>
-                                            </>
-                                        )}
-                                        <button 
-                                            onClick={() => setIsExpanded(false)} 
-                                            className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors"
-                                        >
-                                            Hotovo
-                                        </button>
-                                    </div>
+                                <textarea autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder="Rozepiš se o detailech projektu..." className="w-full p-6 outline-none resize-none min-h-[50vh] text-gray-800 text-base leading-relaxed bg-white" />
+                                <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-col sm:flex-row justify-end gap-2">
+                                    {apiKey && (
+                                        <>
+                                            <button onClick={(e) => { e.preventDefault(); suggestItemsAction(); }} disabled={isSuggestingItems || !value} className="text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 font-bold bg-blue-100 text-blue-700">
+                                                <SimpleIcon name="Sparkles" size={16} /> {isSuggestingItems ? 'AI navrhuje...' : 'Navrhnout (AI) položky'}
+                                            </button>
+                                            <button onClick={(e) => { e.preventDefault(); aiAction(); }} disabled={isEnhancing || !value} className="text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 font-bold bg-purple-100 text-purple-700">
+                                                <SimpleIcon name="Sparkles" size={16} /> {isEnhancing ? 'AI přepisuje...' : 'Vylepšit přes AI'}
+                                            </button>
+                                        </>
+                                    )}
+                                    <button onClick={() => setIsExpanded(false)} className="bg-orange-600 text-white px-6 py-2.5 rounded-lg font-bold">Hotovo</button>
                                 </div>
                             </div>
                         </div>
                     )}
-                </>
+                </div>
             );
         };
 
@@ -388,12 +147,12 @@
           const [currentDate, setCurrentDate] = useState("");
           
           // Modaly
+          const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+          const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
           const [isImportModalOpen, setIsImportModalOpen] = useState(false);
           const [importText, setImportText] = useState("");
           const [isCustomerImportModalOpen, setIsCustomerImportModalOpen] = useState(false);
           const [customerImportText, setCustomerImportText] = useState("");
-          const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-          const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
           
           // API Klíč a AI
           const [apiKey, setApiKey] = useState("");
@@ -404,6 +163,13 @@
           // CLOUD Sync State
           const [firebaseUrl, setFirebaseUrl] = useState("");
           const [syncStatus, setSyncStatus] = useState("");
+          
+          // NOVÉ: Stavy pro Cloud Modaly
+          const [isCloudSaveModalOpen, setIsCloudSaveModalOpen] = useState(false);
+          const [isCloudLoadModalOpen, setIsCloudLoadModalOpen] = useState(false);
+          const [cloudSaveName, setCloudSaveName] = useState("");
+          const [cloudProjects, setCloudProjects] = useState(null);
+          const [currentProjectId, setCurrentProjectId] = useState(() => Date.now().toString());
 
           // AI States
           const [isEnhancingDesc, setIsEnhancingDesc] = useState(false);
@@ -411,13 +177,14 @@
           const [isAuditing, setIsAuditing] = useState(false);
           const [auditResult, setAuditResult] = useState(null);
           const [isExtractingCatalog, setIsExtractingCatalog] = useState(false);
-          const [pendingCatalogItems, setPendingCatalogItems] = useState(null); // Nový stav pro preview položek
-
+          const [pendingCatalogItems, setPendingCatalogItems] = useState(null);
+          
+          // Data State
           const [catalog, setCatalog] = useState([{ id: 1, category: "Materiál", name: "Sádrokarton RBI (Impregnovaný) 12.5mm", unit: "ks", price: 350 }]);
           const [catalogSearch, setCatalogSearch] = useState("");
           const [newCatalogItem, setNewCatalogItem] = useState({ category: "Materiál", name: "", unit: "ks", price: 0 });
           const [priceSettings, setPriceSettings] = useState({ totalLabel: "CELKEM (Práce + Materiál)", payableLabel: "CENA K ÚHRADĚ", rounding: true, discount: 0 });
-          const [contractor, setContractor] = useState({ name: "Lukáš Mrkvička", phone: "739 759 078", email: "" });
+          const [contractor, setContractor] = useState({ name: "Mrkvička na míru", phone: "", email: "" });
           const [customer, setCustomer] = useState({ name: "", address: "", city: "", phone: "", email: "" });
           const [project, setProject] = useState({ subTitle: "PŘEDBĚŽNÝ ROZPOČET", projectType: "", date: "", description: "" });
           const [items, setItems] = useState([]);
@@ -425,34 +192,18 @@
           const dragItem = useRef(); const dragOverItem = useRef();
 
           useEffect(() => {
-            // Pokus o automatické maximalizování okna po spuštění
-            try {
-                window.moveTo(0, 0);
-                window.resizeTo(window.screen.availWidth, window.screen.availHeight);
-            } catch (e) {
-                console.log("Prohlížeč zablokoval automatické zvětšení okna.");
-            }
-
             const now = new Date(); setCurrentDate(`${now.getDate()}.${now.getMonth()+1}.${now.getFullYear().toString().slice(-2)}`);
             setProject(prev => ({...prev, date: `${now.getDate()}. ${now.getMonth()+1}. ${now.getFullYear()}`}));
             const savedKey = localStorage.getItem("gemini_api_key"); if (savedKey) setApiKey(savedKey);
             const savedModel = localStorage.getItem("gemini_ai_model"); if (savedModel) setAiModel(savedModel);
             const savedFb = localStorage.getItem("firebase_url"); if (savedFb) setFirebaseUrl(savedFb);
-            const savedCatalog = localStorage.getItem("mrkvicka_catalog"); if (savedCatalog) { try { setCatalog(JSON.parse(savedCatalog)); } catch (e) {} }
+            
+            const savedCatalog = localStorage.getItem("mrkvicka_catalog"); 
+            if (savedCatalog) { try { setCatalog(JSON.parse(savedCatalog)); } catch (e) {} }
           }, []);
+
           useEffect(() => { localStorage.setItem("mrkvicka_catalog", JSON.stringify(catalog)); }, [catalog]);
 
-          // --- LOGIKA ---
-          const addToCatalog = () => { if (!newCatalogItem.name) return; setCatalog([...catalog, { ...newCatalogItem, id: Date.now() }]); setNewCatalogItem({ category: "Materiál", name: "", unit: "ks", price: 0 }); };
-          const removeFromCatalog = (id) => { if (confirm("Smazat z ceníku?")) setCatalog(catalog.filter(i => i.id !== id)); };
-          const addItemFromCatalog = (ci) => setItems([...items, { id: Date.now(), category: ci.category, name: ci.name, unit: ci.unit, price: ci.price, amount: 1 }]);
-          const importCatalog = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { try { setCatalog(JSON.parse(ev.target.result)); } catch (err) {} }; r.readAsText(f); e.target.value = ''; };
-          const exportCatalog = () => { const b = new Blob([JSON.stringify(catalog)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `cenik.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
-          
-          // Nové filtrování využívající fuzzyMatch
-          const filteredCatalog = catalog.filter(i => fuzzyMatch(catalogSearch, i.name) || fuzzyMatch(catalogSearch, i.category));
-
-          // --- AI API ---
           const fetchAvailableModels = async () => {
               if(!apiKey) { alert("Vlož API klíč."); return; }
               setTestStatus('loading');
@@ -463,7 +214,6 @@
                   if(data.models) {
                       const genModels = data.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
                       let modelNames = genModels.map(m => m.name.replace('models/', ''));
-                      
                       modelNames.sort((a, b) => {
                           const aIsFlash = a.includes('flash');
                           const bIsFlash = b.includes('flash');
@@ -471,13 +221,10 @@
                           if (!aIsFlash && bIsFlash) return 1;
                           return a.localeCompare(b);
                       });
-
                       setAvailableModels(modelNames);
                       setTestStatus('success');
                       const bestModel = modelNames.find(m => m.includes('gemini-1.5-flash')) || modelNames.find(m => m.includes('gemini-2.0-flash')) || modelNames[0];
-                      if(bestModel && !modelNames.includes(aiModel)) {
-                          setAiModel(bestModel);
-                      }
+                      if(bestModel && !modelNames.includes(aiModel)) { setAiModel(bestModel); }
                       alert("Nalezeno " + modelNames.length + " modelů. Doporučuji vybrat model s názvem '1.5-Flash'.");
                   }
               } catch(e) {
@@ -579,7 +326,6 @@ Napiš mi stručné zhodnocení a upozorni mě, jestli mi tam nechybí něco log
               if (items.length === 0) { alert("Nemáš v rozpočtu žádné položky k analýze."); return; }
               setIsExtractingCatalog(true);
 
-              // Výpočet jednotkové ceny ještě před odesláním do AI (celková cena / množství)
               const processedItems = items.map(i => ({
                   name: i.name, 
                   unit: i.unit, 
@@ -610,14 +356,14 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                                       name: ni.name,
                                       unit: ni.unit || "ks",
                                       price: Number(ni.price) || 0,
-                                      selected: true // Pro checkbox v preview modalu
+                                      selected: true
                                   });
                                   currentCatalogNames.push(ni.name.toLowerCase());
                               }
                           });
 
                           if (itemsToAdd.length > 0) {
-                              setPendingCatalogItems(itemsToAdd); // Otevře modální okno s náhledem
+                              setPendingCatalogItems(itemsToAdd);
                           } else {
                               alert("AI nenašla žádné nové položky k přidání (všechny podstatné už v ceníku asi máš).");
                           }
@@ -628,29 +374,31 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
               }
           };
 
-          const saveSettings = () => { 
-              localStorage.setItem("gemini_api_key", apiKey.trim()); 
-              localStorage.setItem("gemini_ai_model", aiModel); 
-              localStorage.setItem("firebase_url", firebaseUrl.trim()); 
-              setIsSettingsModalOpen(false); 
-          };
-
-          // --- CLOUD FUNKCE ---
-          const saveToCloud = async () => {
+          const handleCloudSaveClick = () => {
               if (!firebaseUrl) {
                   alert("Nejdřív si v Nastavení vlož odkaz na svou Firebase databázi.");
                   setIsSettingsModalOpen(true);
                   return;
               }
+              const defaultName = [customer.name, project.projectType].filter(Boolean).join(" - ") || "Nový / Nepojmenovaný projekt";
+              setCloudSaveName(defaultName);
+              setIsCloudSaveModalOpen(true);
+          };
+
+          const confirmCloudSave = async () => {
               setSyncStatus("Ukládám do cloudu...");
+              setIsCloudSaveModalOpen(false);
               
-              // Ukládáme VŠECHNO, včetně loga a fotek (aby se načetlo i na jiném zařízení)
               const dataToSave = {
-                  catalog, contractor, customer, project, items, photos, priceSettings, logo,
-                  lastUpdate: new Date().toISOString()
+                  id: currentProjectId,
+                  name: cloudSaveName,
+                  updatedAt: new Date().toISOString(),
+                  data: { catalog, contractor, customer, project, items, photos, priceSettings, logo }
               };
+              
               const cleanUrl = firebaseUrl.trim().replace(/\/$/, "");
-              const finalUrl = `${cleanUrl}/mrkvicka_data.json`;
+              const finalUrl = `${cleanUrl}/mrkvicka_projects/${currentProjectId}.json`;
+              
               try {
                   const response = await fetch(finalUrl, {
                       method: 'PUT',
@@ -658,55 +406,100 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                       body: JSON.stringify(dataToSave)
                   });
                   if (!response.ok) throw new Error("Nepodařilo se uložit");
-                  setSyncStatus("☁️ Úspěšně uloženo na cloud!");
+                  setSyncStatus("☁️ Úspěšně uloženo!");
                   setTimeout(() => setSyncStatus(""), 3000);
               } catch (error) {
                   console.error(error);
                   setSyncStatus("❌ Chyba cloudu");
-                  alert("Chyba při ukládání do cloudu. Zkontroluj adresu v nastavení a připojení k internetu.");
+                  alert("Chyba při ukládání do cloudu. Zkontroluj odkaz v nastavení.");
               }
           };
 
-          const loadFromCloud = async () => {
+          const handleCloudLoadClick = async () => {
               if (!firebaseUrl) {
                   alert("Nejdřív si v Nastavení vlož odkaz na svou Firebase databázi.");
                   setIsSettingsModalOpen(true);
                   return;
               }
-              setSyncStatus("Stahuji data...");
+              setSyncStatus("Načítám seznam...");
+              setIsCloudLoadModalOpen(true);
+              setCloudProjects(null); // Reset
+              
               const cleanUrl = firebaseUrl.trim().replace(/\/$/, "");
-              const finalUrl = `${cleanUrl}/mrkvicka_data.json`;
+              const finalUrl = `${cleanUrl}/mrkvicka_projects.json`;
+              
               try {
                   const response = await fetch(finalUrl);
                   if (!response.ok) throw new Error("Chyba načítání");
                   const data = await response.json();
+                  
                   if (data) {
-                      if (data.catalog) setCatalog(data.catalog);
-                      if (data.contractor) setContractor(data.contractor);
-                      if (data.customer) setCustomer(data.customer);
-                      if (data.project) setProject(data.project);
-                      if (data.items) setItems(data.items);
-                      if (data.photos) setPhotos(data.photos);
-                      if (data.priceSettings) setPriceSettings(data.priceSettings);
-                      if (data.logo !== undefined) setLogo(data.logo); // může být i prázdné
-                      setSyncStatus("☁️ Data načtena!");
-                      setTimeout(() => setSyncStatus(""), 3000);
+                      // Seřazení od nejnovějšího
+                      const projectsArray = Object.values(data).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+                      setCloudProjects(projectsArray);
                   } else {
-                      setSyncStatus("Cloud je zatím prázdný");
-                      setTimeout(() => setSyncStatus(""), 3000);
+                      setCloudProjects([]);
                   }
+                  setSyncStatus("");
               } catch (error) {
                   console.error(error);
                   setSyncStatus("❌ Chyba spojení");
-                  alert("Chyba při stahování. Zkontroluj odkaz na databázi.");
+                  setIsCloudLoadModalOpen(false);
+                  alert("Chyba při stahování seznamu projektů.");
               }
           };
 
+          const loadSpecificProject = (proj) => {
+              const d = proj.data;
+              if (d.catalog) setCatalog(d.catalog);
+              if (d.contractor) setContractor(d.contractor);
+              if (d.customer) setCustomer(d.customer);
+              if (d.project) setProject(d.project);
+              if (d.items) setItems(d.items);
+              if (d.photos) setPhotos(d.photos);
+              if (d.priceSettings) setPriceSettings(d.priceSettings);
+              if (d.logo !== undefined) setLogo(d.logo);
+              
+              setCurrentProjectId(proj.id);
+              setIsCloudLoadModalOpen(false);
+              setSyncStatus("☁️ Projekt načten!");
+              setTimeout(() => setSyncStatus(""), 3000);
+          };
+
+          const deleteCloudProject = async (id, e) => {
+              e.stopPropagation();
+              if(!confirm("Opravdu smazat tento projekt z cloudu? Tato akce je nevratná.")) return;
+              
+              setSyncStatus("Mažu...");
+              const cleanUrl = firebaseUrl.trim().replace(/\/$/, "");
+              try {
+                  await fetch(`${cleanUrl}/mrkvicka_projects/${id}.json`, { method: 'DELETE' });
+                  setCloudProjects(prev => prev.filter(p => p.id !== id));
+                  setSyncStatus("☁️ Smazáno");
+                  setTimeout(() => setSyncStatus(""), 3000);
+              } catch(err) {
+                  setSyncStatus("❌ Chyba");
+                  alert("Nepodařilo se smazat projekt.");
+              }
+          };
+
+          const saveSettings = () => { 
+              localStorage.setItem("gemini_api_key", apiKey.trim()); 
+              localStorage.setItem("gemini_ai_model", aiModel); 
+              localStorage.setItem("firebase_url", firebaseUrl.trim()); 
+              setIsSettingsModalOpen(false); 
+          };
+
           const saveProject = () => { const d = { contractor, customer, project, items, photos, priceSettings, logo }; const b = new Blob([JSON.stringify(d)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `projekt-${customer.name ? customer.name.replace(new RegExp("\\s+", "g"), '-').toLowerCase() : 'novy'}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
-          const loadProject = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.contractor) setContractor(d.contractor); if(d.customer) setCustomer(d.customer); if(d.project) setProject(d.project); if(d.items) setItems(d.items); if(d.photos) setPhotos(d.photos); if(d.priceSettings) setPriceSettings(d.priceSettings); if(d.logo) setLogo(d.logo); } catch(err) {} }; r.readAsText(f); e.target.value = ''; };
+          const loadProject = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.contractor) setContractor(d.contractor); if(d.customer) setCustomer(d.customer); if(d.project) setProject(d.project); if(d.items) setItems(d.items); if(d.photos) setPhotos(d.photos); if(d.priceSettings) setPriceSettings(d.priceSettings); if(d.logo !== undefined) setLogo(d.logo); setCurrentProjectId(Date.now().toString()); } catch(err) {} }; r.readAsText(f); e.target.value = ''; };
 
           const CATEGORIES = ["Materiál", "Práce", "Látka", "Ostatní"];
           const PROJECT_SUBTITLES = ["PŘEDBĚŽNÝ ROZPOČET", "ROZPOČET", "CENOVÁ NABÍDKA"];
+
+          const addToCatalog = () => { if (!newCatalogItem.name) return; setCatalog([...catalog, { ...newCatalogItem, id: Date.now() }]); setNewCatalogItem({ category: "Materiál", name: "", unit: "ks", price: 0 }); };
+          const removeFromCatalog = (id) => { if (confirm("Smazat z ceníku?")) setCatalog(catalog.filter(i => i.id !== id)); };
+          const addItemFromCatalog = (ci) => setItems([...items, { id: Date.now(), category: ci.category, name: ci.name, unit: ci.unit, price: ci.price, amount: 1 }]);
+          const filteredCatalog = catalog.filter(i => fuzzyMatch(catalogSearch, i.name) || fuzzyMatch(catalogSearch, i.category));
 
           const handleCategoryChange = (id, cat) => setItems(items.map(i => i.id === id ? { ...i, category: cat, unit: cat === 'Látka' ? 'm' : (i.unit==='m'? 'ks': i.unit) } : i));
           const formatCurrency = (v) => new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 2 }).format(v).replace('CZK', 'Kč');
@@ -734,7 +527,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
             <div className="flex flex-col md:flex-row min-h-screen font-sans">
               
               {/* --- EDITOR (Levý panel) --- */}
-              <div className="w-full md:w-1/3 bg-white p-6 shadow-lg overflow-y-auto no-print border-r border-gray-200 h-screen sticky top-0">
+              <div className="w-full md:w-1/3 bg-white p-6 shadow-lg overflow-y-auto no-print border-r border-gray-200 h-screen sticky top-0 flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-orange-600 flex items-center gap-2"><SimpleIcon name="Calculator" size={24} /> Editor</h2>
                     <div className="flex gap-2">
@@ -743,6 +536,7 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                         </button>
                     </div>
                 </div>
+                
                  <div className="flex gap-2 mb-3">
                     <button onClick={saveProject} className="flex-1 bg-gray-600 text-white py-2 rounded flex items-center justify-center gap-2 hover:bg-gray-700 text-sm"><SimpleIcon name="Save" size={16}/> Do zařízení</button>
                     <label className="flex-1 bg-gray-600 text-white py-2 rounded flex items-center justify-center gap-2 hover:bg-gray-700 text-sm cursor-pointer"><SimpleIcon name="FolderUp" size={16}/> Ze zařízení<input type="file" accept=".json" className="hidden" onChange={loadProject}/></label>
@@ -754,55 +548,58 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                         {syncStatus && <span className="text-xs font-bold text-blue-600 animate-pulse">{syncStatus}</span>}
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={saveToCloud} className="flex-1 bg-white border border-blue-300 text-blue-700 py-1.5 rounded flex items-center justify-center gap-2 hover:bg-blue-100 text-sm font-bold shadow-sm transition"><SimpleIcon name="CloudUpload" size={16}/> Na Cloud</button>
-                        <button onClick={loadFromCloud} className="flex-1 bg-white border border-blue-300 text-blue-700 py-1.5 rounded flex items-center justify-center gap-2 hover:bg-blue-100 text-sm font-bold shadow-sm transition"><SimpleIcon name="CloudDownload" size={16}/> Z Cloudu</button>
+                        <button onClick={handleCloudSaveClick} className="flex-1 bg-white border border-blue-300 text-blue-700 py-1.5 rounded flex items-center justify-center gap-2 hover:bg-blue-100 text-sm font-bold shadow-sm transition"><SimpleIcon name="CloudUpload" size={16}/> Na Cloud</button>
+                        <button onClick={handleCloudLoadClick} className="flex-1 bg-white border border-blue-300 text-blue-700 py-1.5 rounded flex items-center justify-center gap-2 hover:bg-blue-100 text-sm font-bold shadow-sm transition"><SimpleIcon name="CloudDownload" size={16}/> Z Cloudu</button>
                     </div>
                 </div>
 
                 {/* Logo & Basic Info */}
-                <div className="mb-6 p-4 bg-orange-50 rounded border border-orange-100"><h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2"><SimpleIcon name="ImageIcon" size={18}/> Tvé Logo</h3><div className="flex items-center gap-4"><div className="h-16 w-auto max-w-[200px] bg-white border rounded flex items-center justify-center overflow-hidden relative px-2">{logo ? <img src={logo} className="w-full h-full object-contain"/> : <CarrotScissorsLogo />}</div><div className="flex-1"><label className="cursor-pointer bg-white border border-gray-300 py-1 px-3 rounded text-sm hover:bg-gray-50 inline-flex items-center gap-2"><SimpleIcon name="Upload" size={14}/> Nahrát logo <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload}/></label>{logo && <button onClick={() => setLogo(null)} className="ml-2 text-xs text-red-500 underline">Odstranit</button>}</div></div></div>
-                <div className="mb-6 space-y-3"><h3 className="font-semibold text-gray-700 border-b pb-2 flex items-center gap-2"><SimpleIcon name="User" size={18}/> Dodavatel & Projekt</h3><input type="text" placeholder="Dodavatel" className="w-full p-2 border rounded" value={contractor.name} onChange={e => setContractor({...contractor, name: e.target.value})} /><input type="text" placeholder="Telefon" className="w-full p-2 border rounded" value={contractor.phone} onChange={e => setContractor({...contractor, phone: e.target.value})} /><input type="text" placeholder="Datum" className="w-full p-2 border rounded" value={project.date} onChange={e => setProject({...project, date: e.target.value})} /></div>
-                <div className="mb-6 space-y-3"><div className="flex justify-between items-center border-b pb-2 mb-2"><h3 className="font-semibold text-gray-700">Zákazník</h3><button onClick={() => setIsCustomerImportModalOpen(true)} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs hover:bg-blue-200 flex items-center gap-1 border border-blue-200"><SimpleIcon name="Paste" size={12}/> Vložit z textu</button></div><input type="text" placeholder="Jméno" className="w-full p-2 border rounded" value={customer.name} onChange={e => setCustomer({...customer, name: e.target.value})}/><input type="text" placeholder="Adresa" className="w-full p-2 border rounded" value={customer.address} onChange={e => setCustomer({...customer, address: e.target.value})}/><input type="text" placeholder="Město" className="w-full p-2 border rounded" value={customer.city} onChange={e => setCustomer({...customer, city: e.target.value})}/><input type="text" placeholder="Telefon" className="w-full p-2 border rounded" value={customer.phone} onChange={e => setCustomer({...customer, phone: e.target.value})}/><input type="text" placeholder="Email" className="w-full p-2 border rounded" value={customer.email} onChange={e => setCustomer({...customer, email: e.target.value})}/></div>
-                
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-700 border-b pb-2 mb-2 flex items-center gap-2"><SimpleIcon name="FileText" size={18}/> Popis & Položky</h3>
-                  <select className="w-full p-2 border rounded mb-2 font-medium" value={project.subTitle} onChange={e => setProject({...project, subTitle: e.target.value})}>{PROJECT_SUBTITLES.map(opt => (<option key={opt} value={opt}>{opt}</option>))}</select>
-                  <input type="text" placeholder="NÁZEV PROJEKTU (NAPŘ. REKONSTRUKCE BYTU)" className="w-full p-2 border rounded mb-2 font-bold uppercase" value={project.projectType} onChange={e => setProject({...project, projectType: e.target.value})} />
-                  
-                  {/* NOVÝ ROZBALOVACÍ EDITOR */}
-                  <RichTextEditor 
-                      value={project.description} 
-                      onChange={(val) => setProject({...project, description: val})} 
-                      placeholder="Zde popiš rozsah prací... (Kliknutím sem se okno roztáhne pro pohodlné psaní)" 
-                      apiKey={apiKey}
-                      aiAction={enhanceDescription}
-                      isEnhancing={isEnhancingDesc}
-                      suggestItemsAction={suggestItemsFromDescription}
-                      isSuggestingItems={isSuggestingItems}
-                  />
-
-                </div>
-
-                <div className="mb-6">
-                  <div className="flex justify-between items-center border-b pb-2 mb-2 flex-wrap gap-2">
-                    <h3 className="font-semibold text-gray-700 flex items-center gap-2"><SimpleIcon name="Calculator" size={18}/> Položky</h3>
-                    <div className="flex gap-2 flex-wrap">
-                        {apiKey && <button onClick={auditBudget} disabled={isAuditing} className="bg-yellow-100 text-yellow-700 border border-yellow-300 px-2 py-1 rounded text-xs hover:bg-yellow-200 flex items-center gap-1 font-bold" title="AI zkontroluje, jestli ti nechybí nějaké položky k nacenění"><SimpleIcon name="Sparkles" size={14}/> {isAuditing ? "..." : "AI Kontrola"}</button>}
-                        <button onClick={() => setIsCatalogModalOpen(true)} className="bg-orange-100 text-orange-700 border border-orange-200 px-2 py-1 rounded text-xs hover:bg-orange-200 flex items-center gap-1 font-bold" title="Ceník"><SimpleIcon name="Book" size={14}/> Ceník</button>
-                        <button onClick={() => setIsImportModalOpen(true)} className="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs hover:bg-blue-200 flex items-center gap-1"><SimpleIcon name="FileDown" size={14}/> Import</button>
-                        <button onClick={addItem} className="bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 flex items-center gap-1 shadow"><SimpleIcon name="Plus" size={14}/> Přidat</button>
+                <div className="flex-1 overflow-y-auto pr-2">
+                    <div className="mb-6 p-4 bg-orange-50 rounded border border-orange-100"><h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2"><SimpleIcon name="ImageIcon" size={18}/> Tvé Logo</h3><div className="flex items-center gap-4"><div className="h-16 w-auto max-w-[200px] bg-white border rounded flex items-center justify-center overflow-hidden relative px-2">{logo ? <img src={logo} className="w-full h-full object-contain"/> : <CarrotScissorsLogo />}</div><div className="flex-1"><label className="cursor-pointer bg-white border border-gray-300 py-1 px-3 rounded text-sm hover:bg-gray-50 inline-flex items-center gap-2"><SimpleIcon name="Upload" size={14}/> Nahrát logo <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload}/></label>{logo && <button onClick={() => setLogo(null)} className="ml-2 text-xs text-red-500 underline">Odstranit</button>}</div></div></div>
+                    <div className="mb-6 space-y-3"><h3 className="font-semibold text-gray-700 border-b pb-2 flex items-center gap-2"><SimpleIcon name="User" size={18}/> Dodavatel & Projekt</h3><input type="text" placeholder="Dodavatel" className="w-full p-2 border rounded" value={contractor.name} onChange={e => setContractor({...contractor, name: e.target.value})} /><input type="text" placeholder="Telefon" className="w-full p-2 border rounded" value={contractor.phone} onChange={e => setContractor({...contractor, phone: e.target.value})} /><input type="text" placeholder="Datum" className="w-full p-2 border rounded" value={project.date} onChange={e => setProject({...project, date: e.target.value})} /></div>
+                    <div className="mb-6 space-y-3"><div className="flex justify-between items-center border-b pb-2 mb-2"><h3 className="font-semibold text-gray-700">Zákazník</h3><button onClick={() => setIsCustomerImportModalOpen(true)} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs hover:bg-blue-200 flex items-center gap-1 border border-blue-200"><SimpleIcon name="Paste" size={12}/> Vložit z textu</button></div><input type="text" placeholder="Jméno" className="w-full p-2 border rounded" value={customer.name} onChange={e => setCustomer({...customer, name: e.target.value})}/><input type="text" placeholder="Adresa" className="w-full p-2 border rounded" value={customer.address} onChange={e => setCustomer({...customer, address: e.target.value})}/><input type="text" placeholder="Město" className="w-full p-2 border rounded" value={customer.city} onChange={e => setCustomer({...customer, city: e.target.value})}/><input type="text" placeholder="Telefon" className="w-full p-2 border rounded" value={customer.phone} onChange={e => setCustomer({...customer, phone: e.target.value})}/><input type="text" placeholder="Email" className="w-full p-2 border rounded" value={customer.email} onChange={e => setCustomer({...customer, email: e.target.value})}/></div>
+                    
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-gray-700 border-b pb-2 mb-2 flex items-center gap-2"><SimpleIcon name="FileText" size={18}/> Popis & Položky</h3>
+                      <select className="w-full p-2 border rounded mb-2 font-medium" value={project.subTitle} onChange={e => setProject({...project, subTitle: e.target.value})}>{PROJECT_SUBTITLES.map(opt => (<option key={opt} value={opt}>{opt}</option>))}</select>
+                      <input type="text" placeholder="NÁZEV PROJEKTU (NAPŘ. REKONSTRUKCE BYTU)" className="w-full p-2 border rounded mb-2 font-bold uppercase" value={project.projectType} onChange={e => setProject({...project, projectType: e.target.value})} />
+                      
+                      <RichTextEditor 
+                          value={project.description} 
+                          onChange={(val) => setProject({...project, description: val})} 
+                          placeholder="Zde popiš rozsah prací... (Kliknutím sem se okno roztáhne pro pohodlné psaní)" 
+                          apiKey={apiKey}
+                          aiAction={enhanceDescription}
+                          isEnhancing={isEnhancingDesc}
+                          suggestItemsAction={suggestItemsFromDescription}
+                          isSuggestingItems={isSuggestingItems}
+                      />
                     </div>
-                  </div>
-                  {items.length === 0 && (<div className="text-center p-4 text-gray-400 text-sm italic border-2 border-dashed rounded bg-gray-50">Zatím žádné položky.</div>)}
-                  <div className="space-y-3">{[...items].map((item) => (<div key={item.id} className="bg-gray-50 p-3 rounded border relative group border-l-4 border-l-orange-200"><button onClick={() => removeItem(item.id)} className="absolute top-2 right-2 text-gray-400 hover:text-red-600"><SimpleIcon name="Trash2" size={16}/></button><select className="w-full p-1 text-xs border-b bg-transparent mb-1 text-gray-600 font-bold uppercase outline-none focus:border-orange-500 cursor-pointer" value={item.category} onChange={(e) => handleCategoryChange(item.id, e.target.value)}>{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat.toUpperCase()}</option>))}</select><input type="text" placeholder="Název" className="w-full p-1 border rounded mb-1 font-medium" value={item.name} onChange={e => updateItem(item.id, 'name', e.target.value)} /><div className="flex gap-2"><input type="number" placeholder="Mn." className="w-16 p-1 border rounded text-right" value={item.amount} onChange={e => updateItem(item.id, 'amount', Number(e.target.value))}/><input type="text" placeholder="Jedn." className="w-16 p-1 border rounded text-center" value={item.unit} onChange={e => updateItem(item.id, 'unit', e.target.value)}/><input type="number" placeholder="Cena" className="flex-1 p-1 border rounded text-right" value={item.price} onChange={e => updateItem(item.id, 'price', Number(e.target.value))}/></div></div>))}</div>
+
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center border-b pb-2 mb-2 flex-wrap gap-2">
+                        <h3 className="font-semibold text-gray-700 flex items-center gap-2"><SimpleIcon name="Calculator" size={18}/> Položky</h3>
+                        <div className="flex gap-2 flex-wrap">
+                            {apiKey && <button onClick={auditBudget} disabled={isAuditing} className="bg-yellow-100 text-yellow-700 border border-yellow-300 px-2 py-1 rounded text-xs hover:bg-yellow-200 flex items-center gap-1 font-bold" title="AI zkontroluje, jestli ti nechybí nějaké položky k nacenění"><SimpleIcon name="Sparkles" size={14}/> {isAuditing ? "..." : "AI Kontrola"}</button>}
+                            <button onClick={() => setIsCatalogModalOpen(true)} className="bg-orange-100 text-orange-700 border border-orange-200 px-2 py-1 rounded text-xs hover:bg-orange-200 flex items-center gap-1 font-bold" title="Ceník"><SimpleIcon name="Book" size={14}/> Ceník</button>
+                            <button onClick={() => setIsImportModalOpen(true)} className="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs hover:bg-blue-200 flex items-center gap-1"><SimpleIcon name="FileDown" size={14}/> Import</button>
+                            <button onClick={addItem} className="bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 flex items-center gap-1 shadow"><SimpleIcon name="Plus" size={14}/> Přidat</button>
+                        </div>
+                      </div>
+                      {items.length === 0 && (<div className="text-center p-4 text-gray-400 text-sm italic border-2 border-dashed rounded bg-gray-50">Zatím žádné položky.</div>)}
+                      <div className="space-y-3">{[...items].map((item) => (<div key={item.id} className="bg-gray-50 p-3 rounded border relative group border-l-4 border-l-orange-200"><button onClick={() => removeItem(item.id)} className="absolute top-2 right-2 text-gray-400 hover:text-red-600"><SimpleIcon name="Trash2" size={16}/></button><select className="w-full p-1 text-xs border-b bg-transparent mb-1 text-gray-600 font-bold uppercase outline-none focus:border-orange-500 cursor-pointer" value={item.category} onChange={(e) => handleCategoryChange(item.id, e.target.value)}>{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat.toUpperCase()}</option>))}</select><input type="text" placeholder="Název" className="w-full p-1 border rounded mb-1 font-medium" value={item.name} onChange={e => updateItem(item.id, 'name', e.target.value)} /><div className="flex gap-2"><input type="number" placeholder="Mn." className="w-16 p-1 border rounded text-right" value={item.amount} onChange={e => updateItem(item.id, 'amount', Number(e.target.value))}/><input type="text" placeholder="Jedn." className="w-16 p-1 border rounded text-center" value={item.unit} onChange={e => updateItem(item.id, 'unit', e.target.value)}/><input type="number" placeholder="Cena" className="flex-1 p-1 border rounded text-right" value={item.price} onChange={e => updateItem(item.id, 'price', Number(e.target.value))}/></div></div>))}</div>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-gray-50 border rounded shadow-sm"><h3 className="font-semibold text-gray-700 border-b pb-2 mb-3 flex items-center gap-2"><SimpleIcon name="Settings" size={18}/> Nastavení ceny</h3><div className="space-y-3"><div className="flex items-center justify-between"><label className="text-sm font-medium">Zaokrouhlovat?</label><input type="checkbox" className="w-5 h-5 accent-orange-600" checked={priceSettings.rounding} onChange={e => setPriceSettings({...priceSettings, rounding: e.target.checked})}/></div><div className="flex items-center justify-between"><label className="text-sm font-medium text-gray-600">Sleva (%)</label><input type="number" min="0" max="100" className="w-16 p-1 border rounded text-right" value={priceSettings.discount} onChange={e => setPriceSettings({...priceSettings, discount: Number(e.target.value)})}/></div></div></div>
+                    <div className="mb-20"><h3 className="font-semibold text-gray-700 border-b pb-2 mb-2 flex items-center gap-2"><SimpleIcon name="ImageIcon" size={18}/> Fotky</h3><div className="bg-gray-50 border-2 border-dashed border-gray-300 p-4 rounded text-center cursor-pointer hover:bg-gray-100 transition relative"><input type="file" multiple accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer"/><p className="text-gray-500 text-sm">Klikni pro nahrání fotek</p></div><div className="grid grid-cols-2 gap-2 mt-2">{photos.map((photo, index) => (<div key={index} className="relative group border rounded p-1 draggable-item" draggable onDragStart={(e) => handleDragStart(e, index)} onDragEnter={(e) => handleDragEnter(e, index)} onDragEnd={handleDragEnd} onDragOver={(e) => e.preventDefault()}><img src={photo.src} alt="preview" className="w-full h-20 object-cover rounded pointer-events-none"/><input type="text" className="w-full text-xs mt-1 p-1 border rounded" value={photo.caption} onChange={(e) => updatePhotoCaption(index, e.target.value)}/><button onClick={() => removePhoto(index)} className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl text-xs">X</button></div>))}</div></div>
                 </div>
 
-                <div className="mb-6 p-4 bg-gray-50 border rounded shadow-sm"><h3 className="font-semibold text-gray-700 border-b pb-2 mb-3 flex items-center gap-2"><SimpleIcon name="Settings" size={18}/> Nastavení ceny</h3><div className="space-y-3"><div className="flex items-center justify-between"><label className="text-sm font-medium">Zaokrouhlovat?</label><input type="checkbox" className="w-5 h-5 accent-orange-600" checked={priceSettings.rounding} onChange={e => setPriceSettings({...priceSettings, rounding: e.target.checked})}/></div><div className="flex items-center justify-between"><label className="text-sm font-medium text-gray-600">Sleva (%)</label><input type="number" min="0" max="100" className="w-16 p-1 border rounded text-right" value={priceSettings.discount} onChange={e => setPriceSettings({...priceSettings, discount: Number(e.target.value)})}/></div></div></div>
-                <div className="mb-20"><h3 className="font-semibold text-gray-700 border-b pb-2 mb-2 flex items-center gap-2"><SimpleIcon name="ImageIcon" size={18}/> Fotky</h3><div className="bg-gray-50 border-2 border-dashed border-gray-300 p-4 rounded text-center cursor-pointer hover:bg-gray-100 transition relative"><input type="file" multiple accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer"/><p className="text-gray-500 text-sm">Klikni pro nahrání fotek</p></div><div className="grid grid-cols-2 gap-2 mt-2">{photos.map((photo, index) => (<div key={index} className="relative group border rounded p-1 draggable-item" draggable onDragStart={(e) => handleDragStart(e, index)} onDragEnter={(e) => handleDragEnter(e, index)} onDragEnd={handleDragEnd} onDragOver={(e) => e.preventDefault()}><img src={photo.src} alt="preview" className="w-full h-20 object-cover rounded pointer-events-none"/><input type="text" className="w-full text-xs mt-1 p-1 border rounded" value={photo.caption} onChange={(e) => updatePhotoCaption(index, e.target.value)}/><button onClick={() => removePhoto(index)} className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl text-xs">X</button></div>))}</div></div>
-                <div className="fixed bottom-0 left-0 md:w-1/3 w-full bg-white p-4 border-t shadow-lg z-10"><button onClick={() => window.print()} className="w-full bg-orange-600 text-white py-3 rounded hover:bg-orange-700 flex items-center justify-center gap-2 font-bold shadow-sm"><SimpleIcon name="Printer" size={20}/> Tisk do PDF</button></div>
+                <div className="mt-auto pt-4 border-t z-10">
+                    <button onClick={() => window.print()} className="w-full bg-orange-600 text-white py-3 rounded hover:bg-orange-700 flex items-center justify-center gap-2 font-bold shadow-sm"><SimpleIcon name="Printer" size={20}/> Tisk do PDF</button>
+                </div>
               </div>
 
-              {/* --- MODAL SETTINGS --- */}
+              {}
               {isSettingsModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 no-print">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative">
@@ -835,14 +632,78 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                                 </select>
                                 <button onClick={fetchAvailableModels} className="px-3 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded hover:bg-blue-200" title="Načíst seznam modelů"><SimpleIcon name="Refresh" size={16}/></button>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Pokud máš nový klíč zdarma, doporučuji použít <b>1.5-flash</b>, protože ty novější mohou mít limit 0 z důvodu nařízení v EU, dokud nepřidáš do cloudu kartu.</p>
                         </div>
                         <div className="flex justify-end gap-2 mt-6"><button onClick={() => setIsSettingsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Zavřít</button><button onClick={saveSettings} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">Uložit Nastavení</button></div>
                     </div>
                 </div>
               )}
 
-              {/* --- MODAL AUDIT ROZPOČTU (AI Kontrola) --- */}
+              {/* MODAL CLOUD SAVE */}
+              {isCloudSaveModalOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center modal-overlay p-4 no-print">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+                        <button onClick={() => setIsCloudSaveModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><SimpleIcon name="X" size={24}/></button>
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-600"><SimpleIcon name="CloudUpload" size={24}/> Uložit do cloudu</h2>
+                        <div className="mb-6">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">Pojmenuj tento projekt:</label>
+                            <input 
+                                type="text" 
+                                className="w-full p-3 border border-gray-300 rounded focus:border-blue-500 outline-none" 
+                                value={cloudSaveName} 
+                                onChange={(e) => setCloudSaveName(e.target.value)}
+                                autoFocus
+                            />
+                            <p className="text-xs text-gray-500 mt-2">Pod tímto jménem ho pak najdeš na všech svých zařízeních.</p>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setIsCloudSaveModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Zrušit</button>
+                            <button onClick={confirmCloudSave} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold flex items-center gap-2"><SimpleIcon name="CloudUpload" size={16}/> Uložit</button>
+                        </div>
+                    </div>
+                </div>
+              )}
+
+              {/* MODAL CLOUD LOAD */}
+              {isCloudLoadModalOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center modal-overlay p-4 no-print">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[85vh]">
+                        <button onClick={() => setIsCloudLoadModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><SimpleIcon name="X" size={24}/></button>
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-600"><SimpleIcon name="CloudDownload" size={24}/> Načíst z cloudu</h2>
+                        
+                        {!cloudProjects ? (
+                            <div className="flex-1 flex justify-center items-center py-12 text-blue-600 font-bold animate-pulse">
+                                Načítám tvé projekty z cloudu...
+                            </div>
+                        ) : cloudProjects.length === 0 ? (
+                            <div className="flex-1 text-center py-12 text-gray-500">
+                                Na cloudu zatím nemáš uložené žádné projekty.
+                            </div>
+                        ) : (
+                            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg">
+                                <ul className="divide-y divide-gray-200">
+                                    {cloudProjects.map(proj => (
+                                        <li key={proj.id} onClick={() => loadSpecificProject(proj)} className="p-4 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between items-center group">
+                                            <div>
+                                                <h3 className="font-bold text-gray-800 text-lg group-hover:text-blue-700 transition-colors">{proj.name}</h3>
+                                                <p className="text-xs text-gray-500 mt-1">Uloženo: {new Date(proj.updatedAt).toLocaleString('cs-CZ')}</p>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <button onClick={(e) => deleteCloudProject(proj.id, e)} className="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Trvale smazat">
+                                                    <SimpleIcon name="Trash2" size={18} />
+                                                </button>
+                                                <div className="text-blue-600 font-bold text-sm bg-blue-100 px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    Otevřít
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </div>
+              )}
+
               {auditResult && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 no-print">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh]">
@@ -858,7 +719,6 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                 </div>
               )}
 
-              {/* --- MODAL CENÍK --- */}
               {isCatalogModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 no-print"><div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative flex flex-col h-[85vh]"><button onClick={() => setIsCatalogModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><SimpleIcon name="X" size={24}/></button>
                 <div className="flex justify-between items-center mb-4 pr-8">
                     <h2 className="text-xl font-bold flex items-center gap-2 text-orange-600"><SimpleIcon name="Book" size={24}/> Můj Ceník</h2>
@@ -868,9 +728,8 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                         </button>
                     )}
                 </div>
-                <div className="mb-4 relative"><input type="text" placeholder="Hledat..." className="w-full p-2 pl-10 border rounded shadow-sm" value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)}/><div className="absolute left-3 top-2.5 text-gray-400"><SimpleIcon name="Search" size={18}/></div></div><div className="mb-4 p-3 bg-gray-50 border rounded flex gap-2 flex-wrap items-end"><div className="flex-1"><label className="text-xs font-bold text-gray-500">Název</label><input type="text" className="w-full p-1 border rounded text-sm" value={newCatalogItem.name} onChange={e => setNewCatalogItem({...newCatalogItem, name: e.target.value})} placeholder="Položka"/></div><div className="w-24"><label className="text-xs font-bold text-gray-500">Kat.</label><select className="w-full p-1 border rounded text-sm" value={newCatalogItem.category} onChange={e => setNewCatalogItem({...newCatalogItem, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div className="w-16"><label className="text-xs font-bold text-gray-500">Jedn.</label><input type="text" className="w-full p-1 border rounded text-sm text-center" value={newCatalogItem.unit} onChange={e => setNewCatalogItem({...newCatalogItem, unit: e.target.value})}/></div><div className="w-20"><label className="text-xs font-bold text-gray-500">Cena</label><input type="number" className="w-full p-1 border rounded text-sm text-right" value={newCatalogItem.price} onChange={e => setNewCatalogItem({...newCatalogItem, price: Number(e.target.value)})}/></div><button onClick={addToCatalog} className="bg-green-600 text-white p-1.5 rounded hover:bg-green-700 text-sm font-bold w-8 flex items-center justify-center h-8">+</button></div><div className="flex-1 overflow-y-auto border rounded mb-4"><table className="w-full text-sm"><thead className="bg-gray-100 sticky top-0"><tr><th className="p-2 text-left">Název</th><th className="p-2 text-left w-24">Kat.</th><th className="p-2 text-right w-24">Cena</th><th className="p-2 w-20">Akce</th></tr></thead><tbody>{filteredCatalog.map(item => (<tr key={item.id} className="border-b hover:bg-gray-50"><td className="p-2">{item.name}</td><td className="p-2 text-gray-500 text-xs uppercase">{item.category}</td><td className="p-2 text-right font-mono">{item.price} Kč/{item.unit}</td><td className="p-2 flex gap-1 justify-center"><button onClick={() => addItemFromCatalog(item)} className="bg-blue-100 text-blue-700 p-1 rounded hover:bg-blue-200" title="Vložit"><SimpleIcon name="Plus" size={14}/></button><button onClick={() => removeFromCatalog(item.id)} className="text-gray-400 hover:text-red-500 p-1" title="Smazat"><SimpleIcon name="Trash2" size={14}/></button></td></tr>))}</tbody></table></div><div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t"><div>{catalog.length} pol.</div><div className="flex gap-2"><button onClick={exportCatalog} className="hover:underline">Zálohovat</button><label className="hover:underline cursor-pointer">Nahrát<input type="file" accept=".json" className="hidden" onChange={importCatalog}/></label></div></div></div></div>)}
+                <div className="mb-4 relative"><input type="text" placeholder="Hledat..." className="w-full p-2 pl-10 border rounded shadow-sm" value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)}/><div className="absolute left-3 top-2.5 text-gray-400"><SimpleIcon name="Search" size={18}/></div></div><div className="mb-4 p-3 bg-gray-50 border rounded flex gap-2 flex-wrap items-end"><div className="flex-1"><label className="text-xs font-bold text-gray-500">Název</label><input type="text" className="w-full p-1 border rounded text-sm" value={newCatalogItem.name} onChange={e => setNewCatalogItem({...newCatalogItem, name: e.target.value})} placeholder="Položka"/></div><div className="w-24"><label className="text-xs font-bold text-gray-500">Kat.</label><select className="w-full p-1 border rounded text-sm" value={newCatalogItem.category} onChange={e => setNewCatalogItem({...newCatalogItem, category: e.target.value})}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div><div className="w-16"><label className="text-xs font-bold text-gray-500">Jedn.</label><input type="text" className="w-full p-1 border rounded text-sm text-center" value={newCatalogItem.unit} onChange={e => setNewCatalogItem({...newCatalogItem, unit: e.target.value})}/></div><div className="w-20"><label className="text-xs font-bold text-gray-500">Cena</label><input type="number" className="w-full p-1 border rounded text-sm text-right" value={newCatalogItem.price} onChange={e => setNewCatalogItem({...newCatalogItem, price: Number(e.target.value)})}/></div><button onClick={addToCatalog} className="bg-green-600 text-white p-1.5 rounded hover:bg-green-700 text-sm font-bold w-8 flex items-center justify-center h-8">+</button></div><div className="flex-1 overflow-y-auto border rounded mb-4"><table className="w-full text-sm"><thead className="bg-gray-100 sticky top-0"><tr><th className="p-2 text-left">Název</th><th className="p-2 text-left w-24">Kat.</th><th className="p-2 text-right w-24">Cena</th><th className="p-2 w-20">Akce</th></tr></thead><tbody>{filteredCatalog.map(item => (<tr key={item.id} className="border-b hover:bg-gray-50"><td className="p-2">{item.name}</td><td className="p-2 text-gray-500 text-xs uppercase">{item.category}</td><td className="p-2 text-right font-mono">{item.price} Kč/{item.unit}</td><td className="p-2 flex gap-1 justify-center"><button onClick={() => addItemFromCatalog(item)} className="bg-blue-100 text-blue-700 p-1 rounded hover:bg-blue-200" title="Vložit"><SimpleIcon name="Plus" size={14}/></button><button onClick={() => removeFromCatalog(item.id)} className="text-gray-400 hover:text-red-500 p-1" title="Smazat"><SimpleIcon name="Trash2" size={14}/></button></td></tr>))}</tbody></table></div></div></div>)}
 
-              {/* --- MODAL NÁHLED NOVÝCH POLOŽEK DO CENÍKU --- */}
               {pendingCatalogItems && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center modal-overlay p-4 no-print">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[85vh]">
@@ -944,13 +803,12 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                 </div>
               )}
 
-              {/* --- OSTATNÍ MODALY --- */}
               {isImportModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 no-print"><div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative"><button onClick={() => setIsImportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><SimpleIcon name="X" size={24}/></button><h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><SimpleIcon name="FileDown" size={24}/> Import Položek</h2><textarea className="w-full border rounded p-3 h-48 text-sm mb-4 font-mono bg-gray-50" placeholder={"Příklad:\nGeberit Duofix 1 ks 5790\nObklad Rako 2 bal 1600 Kč"} value={importText} onChange={(e) => setImportText(e.target.value)}/><div className="flex justify-end gap-2"><button onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Zrušit</button><button onClick={processImport} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">Importovat</button></div></div></div>)}
               {isCustomerImportModalOpen && (<div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4 no-print"><div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative"><button onClick={() => setIsCustomerImportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><SimpleIcon name="X" size={24}/></button><h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><SimpleIcon name="Paste" size={24}/> Import Adresy</h2><textarea className="w-full border rounded p-3 h-48 text-sm mb-4 font-mono bg-gray-50" placeholder={"Vlož celou adresu..."} value={customerImportText} onChange={(e) => setCustomerImportText(e.target.value)}/><div className="flex justify-end gap-2"><button onClick={() => setIsCustomerImportModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Zrušit</button><button onClick={processCustomerImport} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-bold">Použít</button></div></div></div>)}
               
-              {/* --- NÁHLED --- */}
-              <div className="flex-1 bg-gray-500 p-4 md:p-8 overflow-y-auto">
-                <div className="print-area bg-white mx-auto shadow-2xl p-12 max-w-[210mm] min-h-[297mm] text-black" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+              {}
+              <div className="flex-1 bg-gray-500 p-4 md:p-8 overflow-y-auto flex justify-center">
+                <div className="print-area bg-white shadow-2xl p-12 w-full max-w-[210mm] min-h-[297mm] text-black" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex items-start gap-5">
                        <div className="h-16 w-auto max-w-[200px] flex items-center justify-start">{logo ? <img src={logo} className="h-full w-full object-contain object-left"/> : <div className="w-16 h-16"><CarrotScissorsLogo /></div>}</div>
@@ -960,20 +818,16 @@ Vrať POUZE validní JSON pole objektů s klíči 'category' (vyber striktně z:
                   </div>
                   <div className="w-full h-0.5 bg-orange-500 mb-10"></div>
                   <div className="mb-10 text-center"><h2 className="text-2xl font-bold uppercase text-gray-700 mb-1 tracking-wide">{project.subTitle}</h2><h1 className="text-2xl font-bold uppercase text-black tracking-wide min-h-[32px]">{project.projectType || "NÁZEV PROJEKTU"}</h1></div>
-                  <div className="mb-10 bg-gray-50 border-l-4 border-orange-500 p-5"><h3 className="text-orange-500 font-bold text-lg mb-2">Zákazník</h3><div className="text-lg text-black font-medium leading-snug">{customer.name && <p className="font-bold">{customer.name}</p>}{customer.address && <p>{customer.address}</p>}{customer.city && <p>{customer.city}</p>}{customer.phone && <p>Tel: {customer.phone}</p>}{customer.email && <p>Email: {customer.email}</p>}{!customer.name && !customer.address && !customer.city && !customer.phone && !customer.email && (<p className="text-gray-400 italic text-sm">Údaje o zákazníkovi nejsou vyplněny</p>)}</div></div>
+                  <div className="mb-10 bg-gray-50 border-l-4 border-orange-500 p-5"><h3 className="text-orange-500 font-bold text-lg mb-2">Zákazník</h3><div className="text-lg text-black font-medium leading-snug">{customer.name && <p className="font-bold">{customer.name}</p>}{customer.address && <p>{customer.address}</p>}{customer.city && <p>{customer.city}</p>}{customer.phone && <p>{customer.phone}</p>}{customer.email && <p>{customer.email}</p>}</div></div>
                   <div className="mb-10"><h3 className="font-bold text-xl mb-3 text-gray-800 border-b border-gray-200 pb-1">Popis práce</h3><div className="description-content text-base leading-relaxed text-justify text-gray-800 min-h-[20px] whitespace-pre-wrap">{project.description || "Zde bude uveden popis prací..."}</div></div>
                   <div className="mb-6">
                     <h3 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-200 pb-1">Cenová kalkulace</h3>
                     <table className="w-full border-collapse border border-gray-300 text-base"><thead className="hidden"><tr><th></th><th></th><th></th></tr></thead><tbody>{Object.entries(groupedItems).map(([catName, catItems]) => (<React.Fragment key={catName}><tr className="bg-gray-200"><td colSpan="3" className="border border-gray-300 p-2 pl-3 font-bold text-black">{catName}</td></tr>{catItems.map((item) => (<tr key={item.id}><td className="border border-gray-300 p-2 pl-3 align-top w-2/3">{item.name}</td><td className="border border-gray-300 p-2 text-center align-top whitespace-nowrap">{item.amount} {item.unit}</td><td className="border border-gray-300 p-2 text-right align-top whitespace-nowrap">{formatCurrency(item.price)}</td></tr>))}</React.Fragment>))}</tbody></table>
-                    
-                    {/* Obaleno do break-inside-avoid, aby se černý rámeček k úhradě nikdy netiskl sám na další stránce */}
                     <div className="break-inside-avoid">
                         <div className="border-x border-b border-gray-300">{priceSettings.discount > 0 && (<div className="flex justify-between p-2 border-b border-gray-300 text-red-600"><span>Sleva {priceSettings.discount} %</span><span>-{formatCurrency(calculateDiscountAmount())}</span></div>)}<div className="flex justify-between items-center p-3 bg-[#FFF7ED] font-bold text-lg text-black"><span>{priceSettings.totalLabel}</span><span>{formatCurrency(calculateTotal())}</span></div></div>
                         <div className="bg-[#2D2D2D] p-6 mt-4 flex justify-end items-center rounded-sm"><div className="text-right"><div className="text-gray-300 text-sm font-medium uppercase tracking-wider mb-1">{priceSettings.payableLabel}</div><div className="text-[#E67E22] text-4xl font-bold">{formatPriceSimple(getFinalPrice())} Kč</div></div></div>
                     </div>
                   </div>
-                  
-                  {/* Odebráno break-before-page - fotky se napojí hned za rozpočet */}
                   {photos.length > 0 && (<div className="mt-12 pt-8 border-t-2 border-dashed border-gray-200"><div className="flex justify-between items-end mb-6 text-sm text-gray-500 border-b pb-2"><div>{currentDate}</div><div>Fotodokumentace materiálu</div></div><h3 className="font-bold text-xl uppercase mb-6 text-center text-gray-700">Fotodokumentace materiálu</h3><div className="grid grid-cols-3 gap-6">{photos.map((photo, index) => (<div key={index} className="text-center break-inside-avoid"><div className="aspect-square border border-gray-200 flex items-center justify-center overflow-hidden mb-2 bg-white p-2"><img src={photo.src} alt={photo.caption} className="object-contain w-full h-full" /></div><p className="text-sm font-serif text-gray-600">{photo.caption}</p></div>))}</div></div>)}
                 </div>
               </div>
